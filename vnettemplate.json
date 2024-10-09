@@ -1,0 +1,84 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "vnetName": {
+        "type": "string",
+        "metadata": {
+          "description": "The name of the Virtual Network."
+        }
+      },
+      "vnetAddressPrefix": {
+        "type": "string",
+        "metadata": {
+          "description": "The address space for the Virtual Network."
+        }
+      },
+      "subnetName1": {
+        "type": "string",
+        "metadata": {
+          "description": "The name of the first subnet."
+        }
+      },
+      "subnetPrefix1": {
+        "type": "string",
+        "metadata": {
+          "description": "The address prefix for the first subnet."
+        }
+      },
+      "subnetName2": {
+        "type": "string",
+        "metadata": {
+          "description": "The name of the second subnet."
+        }
+      },
+      "subnetPrefix2": {
+        "type": "string",
+        "metadata": {
+          "description": "The address prefix for the second subnet."
+        }
+      },
+      "location": {
+        "type": "string",
+        "metadata": {
+          "description": "The location of the Virtual Network."
+        }
+      }
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2021-05-01",
+        "name": "[parameters('vnetName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "[parameters('vnetAddressPrefix')]"
+            ]
+          },
+          "subnets": [
+            {
+              "name": "[parameters('subnetName1')]",
+              "properties": {
+                "addressPrefix": "[parameters('subnetPrefix1')]"
+              }
+            },
+            {
+              "name": "[parameters('subnetName2')]",
+              "properties": {
+                "addressPrefix": "[parameters('subnetPrefix2')]"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "outputs": {
+      "vnetId": {
+        "type": "string",
+        "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+      }
+    }
+  }
+  
