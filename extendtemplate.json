@@ -1,0 +1,166 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  
+  "parameters": {
+    "appServiceName": {
+      "type": "string",
+      "defaultValue": "myWebApp",
+      "metadata": {
+        "description": "The name of the App Service."
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "F1",
+      "allowedValues": [
+        "F1",
+        "B1",
+        "B2",
+        "B3"
+      ],
+      "metadata": {
+        "description": "The pricing tier for the App Service."
+      }
+    },
+    "sqlServerName": {
+      "type": "string",
+      "defaultValue": "mySqlServer",
+      "metadata": {
+        "description": "The name of the SQL Server."
+      }
+    },
+    "sqlDatabaseName": {
+      "type": "string",
+      "defaultValue": "mySqlDatabase",
+      "metadata": {
+        "description": "The name of the SQL Database."
+      }
+    },
+    "sqlAdministratorLogin": {
+      "type": "string",
+      "defaultValue": "sqlAdmin",
+      "metadata": {
+        "description": "SQL Server admin username."
+      }
+    },
+    "sqlAdministratorPassword": {
+      "type": "secureString",
+      "metadata": {
+        "description": "SQL Server admin password."
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "myKeyVault",
+      "metadata": {
+        "description": "The name of the Azure Key Vault."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "The location for all resources."
+      }
+    },
+    "tenantId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Active Directory tenant ID."
+      }
+    },
+    "objectId": {
+      "type": "string",
+      "metadata": {
+        "description": "The object ID of the user, service principal, or managed identity that will be granted access to Key Vault."
+      }
+    }
+  },
+  
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2021-02-01",
+      "name": "[parameters('appServiceName')]",
+      "location": "[parameters('location')]",  // Location added here
+      "sku": {
+        "name": "[parameters('skuName')]"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2021-02-01",
+      "name": "[parameters('appServiceName')]",
+      "location": "[parameters('location')]",  // Location added here
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('appServiceName'))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServiceName'))]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2022-05-01-preview",
+      "name": "[parameters('sqlServerName')]",
+      "location": "[parameters('location')]",  // Location added here
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdministratorPassword')]"
+      },
+      "resources": [
+        {
+          "type": "databases",
+          "apiVersion": "2022-05-01-preview",
+          "name": "[parameters('sqlDatabaseName')]",
+          "location": "[parameters('location')]",  // Location added here
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))]"
+          ],
+          "properties": {
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": "2147483648",
+            "sampleName": "AdventureWorksLT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[parameters('keyVaultName')]",
+      "location": "[parameters('location')]",  // Location added here
+      "properties": {
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "tenantId": "[parameters('tenantId')]",
+        "accessPolicies": [
+          {
+            "tenantId": "[parameters('tenantId')]",
+            "objectId": "[parameters('objectId')]",
+            "permissions": {
+              "keys": [ "get", "list", "create", "delete", "recover", "backup", "restore" ],
+              "secrets": [ "get", "list", "set", "delete", "recover", "backup", "restore" ],
+              "certificates": [ "get", "list", "create", "delete", "recover", "backup", "restore" ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+
+  "outputs": {
+    "appServiceUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', parameters('appServiceName'))).defaultHostName]"
+    },
+    "sqlConnectionString": {
+      "type": "string",
+      "value": "[concat('Server=tcp:', reference(resourceId('Microsoft.Sql/servers', parameters('sqlServerName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('sqlDatabaseName'), ';Persist Security Info=False;User ID=', parameters('sqlAdministratorLogin'), ';Password=', parameters('sqlAdministratorPassword'), ';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+    }
+  }
+}
