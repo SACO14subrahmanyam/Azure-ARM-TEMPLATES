@@ -1,0 +1,105 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('appServiceName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      ],
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2019-08-01",
+          "name": "appsettings",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('appServiceName'))]"
+          ],
+          "properties": {
+            "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]",
+            "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), '2015-05-01').ConnectionString]"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2015-05-01",
+      "name": "[parameters('appInsightsName')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web"
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('hostingPlanName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('skuName')]",
+        "tier": "[parameters('skuTier')]",
+        "capacity": "[parameters('skuCapacity')]"
+      },
+      "properties": {
+        "maximumElasticWorkerCount": 1
+      }
+    }
+  ],
+  "parameters": {
+    "appServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the App Service."
+      }
+    },
+    "appInsightsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Application Insights resource."
+      }
+    },
+    "hostingPlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the App Service hosting plan."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "East US",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "S1",
+      "metadata": {
+        "description": "SKU for the App Service Plan."
+      }
+    },
+    "skuTier": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "Pricing tier for the App Service Plan."
+      }
+    },
+    "skuCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Number of instances for the App Service Plan."
+      }
+    }
+  }
+}

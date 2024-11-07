@@ -1,0 +1,28 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "appServiceName": {
+        "value": "myAppServicesubbu"
+      },
+      "appInsightsName": {
+        "value": "myAppInsightsName"
+      },
+      "hostingPlanName": {
+        "value": "myHostingPlan"
+      },
+      "location": {
+        "value": "East US"
+      },
+      "skuName": {
+        "value": "S1"
+      },
+      "skuTier": {
+        "value": "Standard"
+      },
+      "skuCapacity": {
+        "value": 1
+      }
+    }
+  }
+  
