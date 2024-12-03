@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "keyVaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Azure Key Vault."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for the Key Vault."
+      }
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "standard",
+      "allowedValues": [
+        "standard",
+        "premium"
+      ],
+      "metadata": {
+        "description": "The SKU of the Key Vault."
+      }
+    },
+    "tenantId": {
+      "type": "string",
+      "metadata": {
+        "description": "The tenant ID of the Azure AD."
+      }
+    },
+    "objectId": {
+      "type": "string",
+      "metadata": {
+        "description": "The object ID of a user, group, or application in Azure AD to grant access to the Key Vault."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[parameters('keyVaultName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "family": "A",
+          "name": "[parameters('skuName')]"
+        },
+        "tenantId": "[parameters('tenantId')]",
+        "accessPolicies": [
+          {
+            "tenantId": "[parameters('tenantId')]",
+            "objectId": "[parameters('objectId')]",
+            "permissions": {
+              "keys": [
+                "get",
+                "list",
+                "create",
+                "delete"
+              ],
+              "secrets": [
+                "get",
+                "list",
+                "set",
+                "delete"
+              ],
+              "certificates": [
+                "get",
+                "list",
+                "create",
+                "delete"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "keyVaultUri": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))).vaultUri]"
+    }
+  }
+}

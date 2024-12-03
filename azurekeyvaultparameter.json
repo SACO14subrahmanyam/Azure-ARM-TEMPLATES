@@ -1,0 +1,22 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "keyVaultName": {
+        "value": "myUniqueKeyVault98765"  
+      },
+      "location": {
+        "value": "East US"
+      },
+      "skuName": {
+        "value": "standard"
+      },
+      "tenantId": {
+        "value": "24c341f8-8c8f-44ef-a388-6fa08c3eef6a"
+      },
+      "objectId": {
+        "value": "a2602d65-d160-4354-9ce7-c2c61563ebc8"  
+      }
+    }
+  }
+  
